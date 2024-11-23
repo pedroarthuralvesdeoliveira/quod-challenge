@@ -10,7 +10,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.result.launch
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,13 +32,31 @@ import androidx.core.content.ContextCompat
 import coil.compose.rememberAsyncImagePainter
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
-import com.google.mlkit.vision.face.FaceContour
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
 import com.google.mlkit.vision.face.FaceLandmark
 import java.io.File
 import java.io.FileOutputStream
 import android.Manifest
+import android.content.Context
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
+import androidx.exifinterface.media.ExifInterface
+import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
+import androidx.lifecycle.lifecycleScope
+import coil.request.ImageRequest
+import coil.size.Size
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -122,174 +139,257 @@ import kotlin.math.sqrt
 //        }
 //    }
 //}
-//
-//@Composable
-//fun FaceComparisonScreen() {
-//    val context = LocalContext.current
-//    var userBitmap by remember { mutableStateOf<Bitmap?>(null) }
-//    var documentBitmap by remember { mutableStateOf<Bitmap?>(null) }
-//    var comparisonResult by remember { mutableStateOf<String?>(null) }
-//
-//    // Launcher for camera
-//    val cameraLauncher = rememberLauncherForActivityResult(
-//        contract = ActivityResultContracts.TakePicturePreview()
-//    ) { bitmap ->
-//        bitmap?.let {
-//            if (userBitmap == null) {
-//                userBitmap = it
-//            } else {
-//                documentBitmap = it
-//                compareImages(userBitmap!!, documentBitmap!!, context) { result ->
-//                    comparisonResult = result
+
+//class MainActivity : ComponentActivity() { //AppCompatActivity() {
+//        private val CAMERA_PERMISSION_REQUEST_CODE = 123
+//        override fun onCreate(savedInstanceState: Bundle?) {
+//        super.onCreate(savedInstanceState)
+//        setContent {
+//            MaterialTheme {
+//                Surface(
+//                    modifier = Modifier.fillMaxSize(),
+//                    color = MaterialTheme.colorScheme.background
+//                ) {
+//                    FaceComparisonComponent()
 //                }
 //            }
 //        }
 //    }
 //
-//    // Launcher for gallery
-//    val galleryLauncher = rememberLauncherForActivityResult(
-//        contract = ActivityResultContracts.GetContent()
-//    ) { uri: Uri? ->
-//        uri?.let {
-//            val bitmap = context.getBitmapFromUri(it)
-//            if (userBitmap == null) {
-//                userBitmap = bitmap
-//            } else {
-//                documentBitmap = bitmap
-//                compareImages(userBitmap!!, documentBitmap!!, context) { result ->
-//                    comparisonResult = result
+//    @Composable
+//    fun FaceComparisonComponent() {
+//        var imageUri by remember { mutableStateOf<Uri?>(null) }
+//        var isSamePerson by remember { mutableStateOf<Boolean?>(null) }
+//        val context = LocalContext.current
+//        val activity = LocalContext.current as? Activity // Get Activity instance
+//        val launcher = rememberLauncherForActivityResult(
+//            contract = ActivityResultContracts.TakePicturePreview(),
+//            onResult = { bitmap: Bitmap? ->
+//                if (bitmap != null) {
+//                    val file = File.createTempFile("image", ".jpg", context.cacheDir)
+//                    val outputStream = FileOutputStream(file)
+//                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+//                    outputStream.close()
+//                    imageUri = Uri.fromFile(file)
 //                }
 //            }
-//        }
-//    }
+//        )
 //
-//    // Permission launcher
-//    val permissionLauncher = rememberLauncherForActivityResult(
-//        ActivityResultContracts.RequestPermission()
-//    ) { isGranted ->
-//        if (isGranted) {
-//            cameraLauncher.launch()
-//        } else {
-//            Toast.makeText(context, "Permissão necessária", Toast.LENGTH_SHORT).show()
-//        }
-//    }
-//
-//    Column(
-//        modifier = Modifier
-//            .fillMaxSize()
-//            .padding(16.dp),
-//        horizontalAlignment = Alignment.CenterHorizontally,
-//        verticalArrangement = Arrangement.Center
-//    ) {
-//        // User Photo Section
-//        Text("Foto do Usuário")
-//        userBitmap?.let { bitmap ->
-//            Image(
-//                bitmap = bitmap.asImageBitmap(),
-//                contentDescription = "Foto do Usuário",
-//                modifier = Modifier.size(200.dp)
-//            )
-//        }
-//        Button(onClick = {
-//            if (userBitmap == null) {
-//                // Solicitar permissão da câmera
-//                permissionLauncher.launch(Manifest.permission.CAMERA)
-//            } else {
-//                // Abrir galeria para documento
-//                galleryLauncher.launch("image/*")
+//        Column {
+//            if (imageUri != null) {
+//                Image(
+//                    painter = rememberAsyncImagePainter(imageUri),
+//                    contentDescription = "Captured Image",
+//                    modifier = Modifier.fillMaxWidth()
+//                )
 //            }
-//        }) {
-//            Text(if (userBitmap == null) "Tirar Foto" else "Escolher Documento")
-//        }
 //
-//        // Comparison Result
-//        comparisonResult?.let { result ->
-//            Spacer(modifier = Modifier.height(16.dp))
-//            Text(
-//                text = result,
-//                color = if (result.contains("Mesma pessoa")) MaterialTheme.colorScheme.primary
-//                else MaterialTheme.colorScheme.error
-//            )
-//        }
-//    }
-//}
-//
-//// Função de extensão para converter URI para Bitmap
-//fun Context.getBitmapFromUri(uri: Uri): Bitmap? {
-//    return try {
-//        val bitmap = android.provider.MediaStore.Images.Media.getBitmap(contentResolver, uri)
-//        bitmap
-//    } catch (e: Exception) {
-//        null
-//    }
-//}
-//
-//// Função para comparar imagens
-//fun compareImages(
-//    userBitmap: Bitmap,
-//    documentBitmap: Bitmap,
-//    context: Context,
-//    onResult: (String) -> Unit
-//) {
-//    val options = FaceDetectorOptions.Builder()
-//        .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
-//        .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_ALL)
-//        .build()
-//
-//    val detector = FaceDetection.getClient(options)
-//
-//    // Preparar imagens para detecção
-//    val userImage = InputImage.fromBitmap(userBitmap, 0)
-//    val documentImage = InputImage.fromBitmap(documentBitmap, 0)
-//
-//    // Processar detecção de faces
-//    detector.process(userImage)
-//        .addOnSuccessListener { userFaces ->
-//            detector.process(documentImage)
-//                .addOnSuccessListener { documentFaces ->
-//                    if (userFaces.isNotEmpty() && documentFaces.isNotEmpty()) {
-//                        val userFace = userFaces[0]
-//                        val documentFace = documentFaces[0]
-//
-//                        // Comparação mais sofisticada
-//                        val similarityScore = calculateFaceSimilarity(userFace, documentFace)
-//
-//                        val result = if (similarityScore > 0.7) {
-//                            "As imagens são da mesma pessoa (Similaridade: ${(similarityScore * 100).toInt()}%)"
-//                        } else {
-//                            "As imagens NÃO são da mesma pessoa (Similaridade: ${(similarityScore * 100).toInt()}%)"
-//                        }
-//
-//                        onResult(result)
+//            Button(onClick = {
+//                if (activity != null) {
+//                    if (ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA)
+//                        == PackageManager.PERMISSION_GRANTED) {
+//                        launcher.launch()
 //                    } else {
-//                        onResult("Nenhum rosto detectado em uma das imagens")
+//                        ActivityCompat.requestPermissions(
+//                            activity,
+//                            arrayOf(Manifest.permission.CAMERA),
+//                            CAMERA_PERMISSION_REQUEST_CODE
+//                        )
 //                    }
 //                }
-//                .addOnFailureListener {
-//                    onResult("Erro na detecção de faces do documento")
+//            }) {
+//                Text("Tirar Foto")
+//            }
+//
+//            if (isSamePerson != null) {
+//                Text(
+//                    text = if (isSamePerson == true) "Mesma Pessoa" else "Pessoas Diferentes",
+//                    color = if (isSamePerson == true) Color.Green else Color.Red
+//                )
+//            }
+//        }
+//
+//        LaunchedEffect(imageUri) {
+//            if (imageUri != null) {
+//                val image = InputImage.fromFilePath(context, imageUri!!)
+//                detectFaces(image)
+//                    .addOnSuccessListener { faces ->
+//                        processFaceList(faces)
+//                    }
+//                    .addOnFailureListener { e ->
+//                        // Trate erros de detecção de rosto
+//                        // ...
+//                    }
+////                compareFaces(image) { result ->
+////                    isSamePerson = result
+////                }
+//            }
+//        }
+//    }
+//
+//    private fun compareFaces(image: InputImage, callback: (Boolean) -> Unit) {
+//        val detector = FaceDetection.getClient() // Use as opções desejadas
+//
+//        detector.process(image)
+//            .addOnSuccessListener { faces ->
+//                if (faces.size >= 2) {
+//                    // Compare as faces usando seus recursos (bounding box, landmarks, etc.)
+//                    // e determine se são da mesma pessoa
+//                    val isSame = areFacesSimilar(faces[0], faces[1])
+//                    callback(isSame)
+//                } else {
+//                    // Trate o caso em que menos de 2 faces foram detectadas
+//                    callback(false) // Ou lance uma exceção
 //                }
+//            }
+//            .addOnFailureListener { e ->
+//                // Trate erros de detecção de rosto
+//                callback(false) // Ou lance uma exceção
+//            }
+//    }
+//
+//    private fun areFacesSimilar(face1: Face, face2: Face): Boolean {
+//        // Implemente sua lógica de comparação de faces aqui
+//        // Compare características como distância entre landmarks, ângulos de rotação, etc.
+//        // Retorne true se as faces forem consideradas semelhantes, false caso contrário
+//
+//        // Exemplo simples usando a distância entre os olhos:
+//        val leftEye1 = face1.getLandmark(FaceLandmark.LEFT_EYE)?.position
+//        val rightEye1 = face1.getLandmark(FaceLandmark.RIGHT_EYE)?.position
+//        val leftEye2 = face2.getLandmark(FaceLandmark.LEFT_EYE)?.position
+//        val rightEye2 = face2.getLandmark(FaceLandmark.RIGHT_EYE)?.position
+//
+//        if (leftEye1 != null && rightEye1 != null && leftEye2 != null && rightEye2 != null) {
+//            val distance1 = distance(leftEye1, rightEye1)
+//            val distance2 = distance(leftEye2, rightEye2)
+//            val threshold = 0.1f // Defina um limite de similaridade
+//
+//            return abs(distance1 - distance2) < threshold
 //        }
-//        .addOnFailureListener {
-//            onResult("Erro na detecção de faces do usuário")
+//
+//        return false
+//    }
+//
+//    private fun distance(point1: PointF, point2: PointF): Float {
+//        return sqrt((point1.x - point2.x).pow(2) + (point1.y - point2.y).pow(2))
+//    }
+//
+//    private fun detectFaces(image: InputImage) : Task<List<Face>> {
+//        // [START set_detector_options]
+//        val options = FaceDetectorOptions.Builder()
+//            .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
+//            .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_ALL)
+//            .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_ALL)
+//            .setMinFaceSize(0.15f)
+//            .enableTracking()
+//            .build()
+//        // [END set_detector_options]
+//
+//        // [START get_detector]
+//        val detector = FaceDetection.getClient(options)
+//        // Or, to use the default option:
+//        // val detector = FaceDetection.getClient();
+//        // [END get_detector]
+//
+//        // [START run_detector]
+//        return detector.process(image)
+//            .addOnSuccessListener { faces ->
+//                // Task completed successfully
+//                // [START_EXCLUDE]
+//                // [START get_face_info]
+//                for (face in faces) {
+//                    val bounds = face.boundingBox
+//                    val rotY = face.headEulerAngleY // Head is rotated to the right rotY degrees
+//                    val rotZ = face.headEulerAngleZ // Head is tilted sideways rotZ degrees
+//
+//                    // If landmark detection was enabled (mouth, ears, eyes, cheeks, and
+//                    // nose available):
+//                    val leftEar = face.getLandmark(FaceLandmark.LEFT_EAR)
+//                    leftEar?.let {
+//                        val leftEarPos = leftEar.position
+//                    }
+//
+//                    // If classification was enabled:
+//                    if (face.smilingProbability != null) {
+//                        val smileProb = face.smilingProbability
+//                    }
+//                    if (face.rightEyeOpenProbability != null) {
+//                        val rightEyeOpenProb = face.rightEyeOpenProbability
+//                    }
+//
+//                    // If face tracking was enabled:
+//                    if (face.trackingId != null) {
+//                        val id = face.trackingId
+//                    }
+//                }
+//                // [END get_face_info]
+//                // [END_EXCLUDE]
+//            }
+//            .addOnFailureListener { e ->
+//                // Task failed with an exception
+//                // ...
+//            }
+//        // [END run_detector]
+//    }
+//
+//    private fun faceOptionsExamples() : FaceDetectorOptions {
+//        // [START mlkit_face_options_examples]
+//        // High-accuracy landmark detection and face classification
+//        val highAccuracyOpts = FaceDetectorOptions.Builder()
+//            .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
+//            .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_ALL)
+//            .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_ALL)
+//            .build()
+//
+//        // Real-time contour detection
+//        val realTimeOpts = FaceDetectorOptions.Builder()
+//            .setContourMode(FaceDetectorOptions.CONTOUR_MODE_ALL)
+//            .build()
+//
+//        return highAccuracyOpts
+//        // [END mlkit_face_options_examples]
+//    }
+//
+//    private fun processFaceList(faces: List<Face>) {
+//        // [START mlkit_face_list]
+//        for (face in faces) {
+//            val bounds = face.boundingBox
+//            val rotY = face.headEulerAngleY // Head is rotated to the right rotY degrees
+//            val rotZ = face.headEulerAngleZ // Head is tilted sideways rotZ degrees
+//
+//            // If landmark detection was enabled (mouth, ears, eyes, cheeks, and
+//            // nose available):
+//            val leftEar = face.getLandmark(FaceLandmark.LEFT_EAR)
+//            leftEar?.let {
+//                val leftEarPos = leftEar.position
+//            }
+//
+//            // If contour detection was enabled:
+//            val leftEyeContour = face.getContour(FaceContour.LEFT_EYE)?.points
+//            val upperLipBottomContour = face.getContour(FaceContour.UPPER_LIP_BOTTOM)?.points
+//
+//            // If classification was enabled:
+//            if (face.smilingProbability != null) {
+//                val smileProb = face.smilingProbability
+//            }
+//            if (face.rightEyeOpenProbability != null) {
+//                val rightEyeOpenProb = face.rightEyeOpenProbability
+//            }
+//
+//            // If face tracking was enabled:
+//            if (face.trackingId != null) {
+//                val id = face.trackingId
+//            }
 //        }
-//}
-//
-//// Função para calcular similaridade de faces (simplificada)
-//fun calculateFaceSimilarity(face1: com.google.mlkit.vision.face.Face, face2: com.google.mlkit.vision.face.Face): Float {
-//    // Comparação baseada em proporções fciais
-//    val sizeSimilarity = 1 - (Math.abs(face1.boundingBox.width() - face2.boundingBox.width()) /
-//            face1.boundingBox.width().toFloat())
-//
-//    val positionSimilarity = 1 - (Math.abs(face1.boundingBox.centerX() - face2.boundingBox.centerX()) /
-//            face1.boundingBox.width().toFloat())
-//
-//    // Combinar métricas (você pode refinar este método)
-//    return (sizeSimilarity + positionSimilarity) / 2
+//        // [END mlkit_face_list]
+//    }
 //}
 
-class MainActivity : ComponentActivity() { //AppCompatActivity() {
-        private val CAMERA_PERMISSION_REQUEST_CODE = 123
-        override fun onCreate(savedInstanceState: Bundle?) {
+class MainActivity : ComponentActivity() {
+    private val CAMERA_PERMISSION_REQUEST_CODE = 123
+    private val SIMILARITY_THRESHOLD = 0.85f // Threshold for face similarity (85%)
+
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             MaterialTheme {
@@ -307,44 +407,97 @@ class MainActivity : ComponentActivity() { //AppCompatActivity() {
     fun FaceComparisonComponent() {
         var imageUri by remember { mutableStateOf<Uri?>(null) }
         var isSamePerson by remember { mutableStateOf<Boolean?>(null) }
+        var processingStatus by remember { mutableStateOf("") }
+        var faceDetected by remember { mutableIntStateOf(0) }
+
         val context = LocalContext.current
-        val activity = LocalContext.current as? Activity // Get Activity instance
+        val activity = LocalContext.current as? Activity
+
+        val photoFile = remember {
+            File.createTempFile(
+                "IMG_",
+                ".jpg",
+                context.cacheDir
+            ).apply {
+                createNewFile()
+                deleteOnExit()
+            }
+        }
+
+        val photoUri = remember {
+            FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.provider",
+                photoFile
+            )
+        }
+
         val launcher = rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.TakePicturePreview(),
-            onResult = { bitmap: Bitmap? ->
-                if (bitmap != null) {
-                    val file = File.createTempFile("image", ".jpg", context.cacheDir)
-                    val outputStream = FileOutputStream(file)
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
-                    outputStream.close()
-                    imageUri = Uri.fromFile(file)
+            contract = ActivityResultContracts.TakePicture(),
+            onResult = { success ->
+                if (success) {
+                    lifecycleScope.launch {
+                        processingStatus = "Otimizando imagem..."
+                        try {
+                            withContext(Dispatchers.IO) {
+                                val optimizedImageFile = optimizeImage(photoFile, context)
+                                withContext(Dispatchers.Main) {
+                                    imageUri = Uri.fromFile(optimizedImageFile)
+                                    processingStatus = ""
+                                }
+                            }
+                        } catch (e: Exception) {
+                            processingStatus = "Erro ao otimizar imagem: ${e.message}"
+                        }
+                    }
                 }
             }
         )
 
-        Column {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
             if (imageUri != null) {
                 Image(
-                    painter = rememberAsyncImagePainter(imageUri),
+                    painter = rememberAsyncImagePainter(
+                        model = ImageRequest.Builder(context)
+                            .data(imageUri)
+                            .size(Size.ORIGINAL)
+                            .build()
+                    ),
                     contentDescription = "Captured Image",
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(300.dp)
+                        .clip(RoundedCornerShape(8.dp))
                 )
             }
 
-            Button(onClick = {
-                if (activity != null) {
-                    if (ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA)
-                        == PackageManager.PERMISSION_GRANTED) {
-                        launcher.launch()
-                    } else {
-                        ActivityCompat.requestPermissions(
-                            activity,
-                            arrayOf(Manifest.permission.CAMERA),
-                            CAMERA_PERMISSION_REQUEST_CODE
-                        )
+            Button(
+                onClick = {
+                    if (activity != null) {
+                        when {
+                            ContextCompat.checkSelfPermission(
+                                activity,
+                                Manifest.permission.CAMERA
+                            ) == PackageManager.PERMISSION_GRANTED -> {
+                                launcher.launch(photoUri)
+                            }
+                            else -> {
+                                ActivityCompat.requestPermissions(
+                                    activity,
+                                    arrayOf(Manifest.permission.CAMERA),
+                                    this@MainActivity.CAMERA_PERMISSION_REQUEST_CODE
+                                )
+                            }
+                        }
                     }
-                }
-            }) {
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 Text("Tirar Foto")
             }
 
@@ -358,63 +511,89 @@ class MainActivity : ComponentActivity() { //AppCompatActivity() {
 
         LaunchedEffect(imageUri) {
             if (imageUri != null) {
-                val image = InputImage.fromFilePath(context, imageUri!!)
-                compareFaces(image) { result ->
-                    isSamePerson = result
+                processingStatus = "Processando imagem..."
+                try {
+                    val image = InputImage.fromFilePath(context, imageUri!!)
+                    compareFaces(image) { result, numFaces ->
+                        isSamePerson = result
+                        faceDetected = numFaces
+                        processingStatus = ""
+                    }
+                } catch (e: Exception) {
+                    processingStatus = "Erro ao processar imagem: ${e.message}"
                 }
             }
         }
     }
 
-    private fun compareFaces(image: InputImage, callback: (Boolean) -> Unit) {
-        val detector = FaceDetection.getClient() // Use as opções desejadas
+    private suspend fun optimizeImage(originalFile: File, context: Context): File {
+        return withContext(Dispatchers.IO) {
+            val targetWidth = 2048  // Largura máxima desejada
+            val targetHeight = 2048 // Altura máxima desejada
 
-        detector.process(image)
-            .addOnSuccessListener { faces ->
-                if (faces.size >= 2) {
-                    // Compare as faces usando seus recursos (bounding box, landmarks, etc.)
-                    // e determine se são da mesma pessoa
-                    val isSame = areFacesSimilar(faces[0], faces[1])
-                    callback(isSame)
-                } else {
-                    // Trate o caso em que menos de 2 faces foram detectadas
-                    callback(false) // Ou lance uma exceção
-                }
+            // Carregar as dimensões da imagem original
+            val options = BitmapFactory.Options().apply {
+                inJustDecodeBounds = true
             }
-            .addOnFailureListener { e ->
-                // Trate erros de detecção de rosto
-                callback(false) // Ou lance uma exceção
+            BitmapFactory.decodeFile(originalFile.absolutePath, options)
+
+            // Calcular o fator de escala
+            var scale = 1
+            while (options.outWidth / scale > targetWidth ||
+                options.outHeight / scale > targetHeight) {
+                scale *= 2
             }
-    }
 
-    private fun areFacesSimilar(face1: Face, face2: Face): Boolean {
-        // Implemente sua lógica de comparação de faces aqui
-        // Compare características como distância entre landmarks, ângulos de rotação, etc.
-        // Retorne true se as faces forem consideradas semelhantes, false caso contrário
+            // Carregar a imagem com o fator de escala calculado
+            val scaledOptions = BitmapFactory.Options().apply {
+                inSampleSize = scale
+                inJustDecodeBounds = false
+            }
 
-        // Exemplo simples usando a distância entre os olhos:
-        val leftEye1 = face1.getLandmark(FaceLandmark.LEFT_EYE)?.position
-        val rightEye1 = face1.getLandmark(FaceLandmark.RIGHT_EYE)?.position
-        val leftEye2 = face2.getLandmark(FaceLandmark.LEFT_EYE)?.position
-        val rightEye2 = face2.getLandmark(FaceLandmark.RIGHT_EYE)?.position
+            val bitmap = BitmapFactory.decodeFile(originalFile.absolutePath, scaledOptions)
 
-        if (leftEye1 != null && rightEye1 != null && leftEye2 != null && rightEye2 != null) {
-            val distance1 = distance(leftEye1, rightEye1)
-            val distance2 = distance(leftEye2, rightEye2)
-            val threshold = 0.1f // Defina um limite de similaridade
+            // Rotacionar a imagem se necessário
+            val rotatedBitmap = bitmap?.let { rotateBitmapIfNeeded(it, originalFile.absolutePath) }
 
-            return abs(distance1 - distance2) < threshold
+            // Criar novo arquivo para a imagem otimizada
+            val optimizedFile = File.createTempFile("optimized_", ".jpg", context.cacheDir)
+
+            // Salvar a imagem otimizada
+            FileOutputStream(optimizedFile).use { out ->
+                rotatedBitmap?.compress(Bitmap.CompressFormat.JPEG, 95, out)
+            }
+
+            // Limpar recursos
+            bitmap?.recycle()
+            rotatedBitmap?.recycle()
+
+            optimizedFile
         }
-
-        return false
     }
 
-    private fun distance(point1: PointF, point2: PointF): Float {
-        return sqrt((point1.x - point2.x).pow(2) + (point1.y - point2.y).pow(2))
+    private fun rotateBitmapIfNeeded(bitmap: Bitmap, path: String): Bitmap {
+        val ei = ExifInterface(path)
+        return when (ei.getAttributeInt(
+            ExifInterface.TAG_ORIENTATION,
+            ExifInterface.ORIENTATION_NORMAL
+        )) {
+            ExifInterface.ORIENTATION_ROTATE_90 -> rotateImage(bitmap, 90f)
+            ExifInterface.ORIENTATION_ROTATE_180 -> rotateImage(bitmap, 180f)
+            ExifInterface.ORIENTATION_ROTATE_270 -> rotateImage(bitmap, 270f)
+            else -> bitmap
+        }
     }
 
-    private fun detectFaces(image: InputImage) {
-        // [START set_detector_options]
+    private fun rotateImage(source: Bitmap, angle: Float): Bitmap {
+        val matrix = Matrix()
+        matrix.postRotate(angle)
+        return Bitmap.createBitmap(
+            source, 0, 0, source.width, source.height,
+            matrix, true
+        )
+    }
+
+    private fun compareFaces(image: InputImage, callback: (Boolean, Int) -> Unit) {
         val options = FaceDetectorOptions.Builder()
             .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
             .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_ALL)
@@ -422,102 +601,89 @@ class MainActivity : ComponentActivity() { //AppCompatActivity() {
             .setMinFaceSize(0.15f)
             .enableTracking()
             .build()
-        // [END set_detector_options]
 
-        // [START get_detector]
         val detector = FaceDetection.getClient(options)
-        // Or, to use the default option:
-        // val detector = FaceDetection.getClient();
-        // [END get_detector]
 
-        // [START run_detector]
-        val result = detector.process(image)
+        detector.process(image)
             .addOnSuccessListener { faces ->
-                // Task completed successfully
-                // [START_EXCLUDE]
-                // [START get_face_info]
-                for (face in faces) {
-                    val bounds = face.boundingBox
-                    val rotY = face.headEulerAngleY // Head is rotated to the right rotY degrees
-                    val rotZ = face.headEulerAngleZ // Head is tilted sideways rotZ degrees
-
-                    // If landmark detection was enabled (mouth, ears, eyes, cheeks, and
-                    // nose available):
-                    val leftEar = face.getLandmark(FaceLandmark.LEFT_EAR)
-                    leftEar?.let {
-                        val leftEarPos = leftEar.position
-                    }
-
-                    // If classification was enabled:
-                    if (face.smilingProbability != null) {
-                        val smileProb = face.smilingProbability
-                    }
-                    if (face.rightEyeOpenProbability != null) {
-                        val rightEyeOpenProb = face.rightEyeOpenProbability
-                    }
-
-                    // If face tracking was enabled:
-                    if (face.trackingId != null) {
-                        val id = face.trackingId
-                    }
+                if (faces.size >= 2) {
+                    val isSame = areFacesSimilar(faces[0], faces[1])
+                    callback(isSame, faces.size)
+                } else {
+                    callback(false, faces.size)
                 }
-                // [END get_face_info]
-                // [END_EXCLUDE]
             }
             .addOnFailureListener { e ->
-                // Task failed with an exception
-                // ...
+                Log.e("FaceComparison", "Error detecting faces", e)
+                callback(false, 0)
             }
-        // [END run_detector]
     }
 
-    private fun faceOptionsExamples() {
-        // [START mlkit_face_options_examples]
-        // High-accuracy landmark detection and face classification
-        val highAccuracyOpts = FaceDetectorOptions.Builder()
-            .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
-            .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_ALL)
-            .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_ALL)
-            .build()
+    private fun areFacesSimilar(face1: Face, face2: Face): Boolean {
+        // Lista de características para comparar
+        var similarityScore = 0f
+        var totalFeatures = 0f
 
-        // Real-time contour detection
-        val realTimeOpts = FaceDetectorOptions.Builder()
-            .setContourMode(FaceDetectorOptions.CONTOUR_MODE_ALL)
-            .build()
-        // [END mlkit_face_options_examples]
-    }
+        // 1. Comparar distância entre olhos
+        val leftEye1 = face1.getLandmark(FaceLandmark.LEFT_EYE)?.position
+        val rightEye1 = face1.getLandmark(FaceLandmark.RIGHT_EYE)?.position
+        val leftEye2 = face2.getLandmark(FaceLandmark.LEFT_EYE)?.position
+        val rightEye2 = face2.getLandmark(FaceLandmark.RIGHT_EYE)?.position
 
-    private fun processFaceList(faces: List<Face>) {
-        // [START mlkit_face_list]
-        for (face in faces) {
-            val bounds = face.boundingBox
-            val rotY = face.headEulerAngleY // Head is rotated to the right rotY degrees
-            val rotZ = face.headEulerAngleZ // Head is tilted sideways rotZ degrees
+        if (leftEye1 != null && rightEye1 != null && leftEye2 != null && rightEye2 != null) {
+            val eyeDistance1 = distance(leftEye1, rightEye1)
+            val eyeDistance2 = distance(leftEye2, rightEye2)
+            val eyeRatio = minOf(eyeDistance1, eyeDistance2) / maxOf(eyeDistance1, eyeDistance2)
+            similarityScore += eyeRatio
+            totalFeatures++
+        }
 
-            // If landmark detection was enabled (mouth, ears, eyes, cheeks, and
-            // nose available):
-            val leftEar = face.getLandmark(FaceLandmark.LEFT_EAR)
-            leftEar?.let {
-                val leftEarPos = leftEar.position
-            }
+        // 2. Comparar ângulos da cabeça
+        val rotationScore = 1f - (
+                abs(face1.headEulerAngleY - face2.headEulerAngleY) / 90f +
+                        abs(face1.headEulerAngleZ - face2.headEulerAngleZ) / 90f
+                ) / 2f
+        similarityScore += rotationScore
+        totalFeatures++
 
-            // If contour detection was enabled:
-            val leftEyeContour = face.getContour(FaceContour.LEFT_EYE)?.points
-            val upperLipBottomContour = face.getContour(FaceContour.UPPER_LIP_BOTTOM)?.points
+        // 3. Comparar distância entre olhos e boca
+        val mouth1 = face1.getLandmark(FaceLandmark.MOUTH_BOTTOM)?.position
+        val mouth2 = face2.getLandmark(FaceLandmark.MOUTH_BOTTOM)?.position
 
-            // If classification was enabled:
-            if (face.smilingProbability != null) {
-                val smileProb = face.smilingProbability
-            }
-            if (face.rightEyeOpenProbability != null) {
-                val rightEyeOpenProb = face.rightEyeOpenProbability
-            }
+        if (mouth1 != null && mouth2 != null && leftEye1 != null && leftEye2 != null) {
+            val mouthEyeDistance1 = distance(leftEye1, mouth1)
+            val mouthEyeDistance2 = distance(leftEye2, mouth2)
+            val mouthRatio = minOf(mouthEyeDistance1, mouthEyeDistance2) /
+                    maxOf(mouthEyeDistance1, mouthEyeDistance2)
+            similarityScore += mouthRatio
+            totalFeatures++
+        }
 
-            // If face tracking was enabled:
-            if (face.trackingId != null) {
-                val id = face.trackingId
+        // 4. Comparar características de classificação
+        face1.smilingProbability?.let { smile1 ->
+            face2.smilingProbability?.let { smile2 ->
+                val smileScore = 1f - abs(smile1 - smile2)
+                similarityScore += smileScore
+                totalFeatures++
             }
         }
-        // [END mlkit_face_list]
+
+        face1.rightEyeOpenProbability?.let { eye1 ->
+            face2.rightEyeOpenProbability?.let { eye2 ->
+                val eyeScore = 1f - abs(eye1 - eye2)
+                similarityScore += eyeScore
+                totalFeatures++
+            }
+        }
+
+        // Calcular pontuação final
+        val finalScore = if (totalFeatures > 0) similarityScore / totalFeatures else 0f
+
+        Log.d("FaceComparison", "Similarity Score: $finalScore")
+        return finalScore >= SIMILARITY_THRESHOLD
+    }
+
+    private fun distance(point1: PointF, point2: PointF): Float {
+        return sqrt((point1.x - point2.x).pow(2) + (point1.y - point2.y).pow(2))
     }
 }
