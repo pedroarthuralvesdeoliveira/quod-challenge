@@ -1,5 +1,8 @@
 [versions]
+accompanistSystemuicontroller = "0.32.0"
 agp = "8.7.2"
+appcompat = "1.7.0"
+biometric = "1.4.0-alpha02"
 cameraCore = "1.4.0"
 coilCompose = "2.4.0"
 common = "18.11.0"
@@ -18,6 +21,9 @@ composeBom = "2024.11.00"
 androidx-compose-runtime-livedata = "1.7.5"
 
 [libraries]
+accompanist-systemuicontroller = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanistSystemuicontroller" }
+androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
+androidx-biometric = { module = "androidx.biometric:biometric", version.ref = "biometric" }
 androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cameraCore" }
 androidx-camera-core = { module = "androidx.camera:camera-core", version.ref = "cameraCore" }
 androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "cameraCore" }
