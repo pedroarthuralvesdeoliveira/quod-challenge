@@ -47,6 +47,7 @@ dependencies {
     implementation(libs.androidx.camera.view)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.navigation.compose)
     implementation(libs.face.detection)
     implementation(libs.image.labeling)
     implementation(libs.androidx.biometric)

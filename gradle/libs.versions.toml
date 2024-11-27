@@ -19,6 +19,7 @@ lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.9.3"
 composeBom = "2024.11.00"
 androidx-compose-runtime-livedata = "1.7.5"
+navigationCompose = "2.8.4"
 
 [libraries]
 accompanist-systemuicontroller = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanistSystemuicontroller" }
@@ -31,6 +32,7 @@ androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-exifinterface = { module = "androidx.exifinterface:exifinterface", version.ref = "exifinterface" }
 androidx-lifecycle-livedata-ktx = { module = "androidx.lifecycle:lifecycle-livedata-ktx", version.ref = "lifecycleLivedataKtx" }
+androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 androidx-runtime-livedata = { module = "androidx.compose.runtime:runtime-livedata", version.ref = "androidx-compose-runtime-livedata" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 common = { module = "com.google.mlkit:common", version.ref = "common" }

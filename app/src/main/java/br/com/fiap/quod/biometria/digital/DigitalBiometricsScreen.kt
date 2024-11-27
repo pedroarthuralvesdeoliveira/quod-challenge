@@ -3,61 +3,103 @@ package br.com.fiap.quod.biometria.digital
 import android.util.Log
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import br.com.fiap.quod.R
 
 @Composable
-fun BiometricAuthenticationButton(
+fun BiometricFingerprintAuthentication(
     biometricHelper: BiometricHelper,
-    onClick: () -> Unit
+    onSuccess: () -> Unit,
+    onError: (String) -> Unit
 ) {
     val context = LocalContext.current
     val biometricManager = BiometricManager.from(context)
-    val canAuthenticate = biometricManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG) == BiometricManager.BIOMETRIC_SUCCESS
+
+    val canAuthenticateFingerprint = biometricManager.canAuthenticate(
+        BiometricManager.Authenticators.BIOMETRIC_STRONG
+    ) == BiometricManager.BIOMETRIC_SUCCESS
 
     Button(
         onClick = {
-            if (canAuthenticate) {
-                val promptInfo = BiometricPrompt.PromptInfo.Builder()
-                    .setTitle("Autenticação Biométrica")
-                    .setSubtitle("Use sua impressão digital para autenticar")
-                    .setNegativeButtonText("Cancelar")
-                    .build()
+            if (canAuthenticateFingerprint) {
+                try {
+                    val promptInfo = BiometricPrompt.PromptInfo.Builder()
+                        .setTitle("Autenticação por Impressão Digital")
+                        .setSubtitle("Use sua impressão digital para autenticar")
+                        .setNegativeButtonText("Cancelar")
+                        .build()
 
-                val biometricPrompt = biometricHelper.createBiometricPrompt(
-                    object : BiometricPrompt.AuthenticationCallback() {
-                        override fun onAuthenticationSucceeded(
-                            result: BiometricPrompt.AuthenticationResult
-                        ) {
-                            super.onAuthenticationSucceeded(result)
-                            onClick()
-                            Log.d("BiometricAuthentication", "Parabéns, você foi autenticado com sucesso!")
+                    val biometricPrompt = biometricHelper.createBiometricPrompt(
+                        object : BiometricPrompt.AuthenticationCallback() {
+                            override fun onAuthenticationSucceeded(
+                                result: BiometricPrompt.AuthenticationResult
+                            ) {
+                                super.onAuthenticationSucceeded(result)
+                                Log.d("BiometricAuth", "Autenticação por Impressão Digital bem sucedida")
+                                onSuccess()
+                            }
+
+                            override fun onAuthenticationError(
+                                errorCode: Int,
+                                errString: CharSequence
+                            ) {
+                                super.onAuthenticationError(errorCode, errString)
+                                Log.e("BiometricAuth", "Erro de Autenticação por Impressão Digital: $errorCode - $errString")
+                                val errorMessage = when (errorCode) {
+                                    BiometricPrompt.ERROR_HW_NOT_PRESENT ->
+                                        "Hardware biométrico não encontrado"
+                                    BiometricPrompt.ERROR_HW_UNAVAILABLE ->
+                                        "Hardware biométrico indisponível"
+                                    BiometricPrompt.ERROR_NO_BIOMETRICS ->
+                                        "Nenhuma impressão digital cadastrada"
+                                    BiometricPrompt.ERROR_LOCKOUT ->
+                                        "Muitas tentativas. Tente novamente mais tarde"
+                                    BiometricPrompt.ERROR_LOCKOUT_PERMANENT ->
+                                        "Bloqueio permanente. Use outra forma de autenticação"
+                                    else -> errString.toString()
+                                }
+                                onError(errorMessage)
+                            }
+
+                            override fun onAuthenticationFailed() {
+                                super.onAuthenticationFailed()
+                                Log.e("BiometricAuth", "Falha na Autenticação por Impressão Digital")
+                                onError("Falha na autenticação por impressão digital. Tente novamente.")
+                            }
                         }
+                    )
 
-                        override fun onAuthenticationError(
-                            errorCode: Int,
-                            errString: CharSequence
-                        ) {
-                            super.onAuthenticationError(errorCode, errString)
-                            Log.d("BiometricAuthentication", "Erro de autenticação: $errString")
-                        }
-
-                        override fun onAuthenticationFailed() {
-                            super.onAuthenticationFailed()
-                            Log.d("BiometricAuthentication", "Falha na autenticação")
-                        }
-                    }
-                )
-
-                biometricPrompt.authenticate(promptInfo)
+                    biometricPrompt.authenticate(promptInfo)
+                    Log.d("BiometricAuth", "Solicitação de autenticação por impressão digital iniciada")
+                } catch (e: Exception) {
+                    Log.e("BiometricAuth", "Erro ao iniciar autenticação por impressão digital", e)
+                    onError("Erro ao iniciar autenticação por impressão digital: ${e.message}")
+                }
             } else {
-                Log.d("BiometricAuthentication", "Biometria não suportada")
+                Log.e("BiometricAuth", "Autenticação por impressão digital não suportada")
+                onError("Autenticação por impressão digital não suportada neste dispositivo")
             }
         },
-        enabled = canAuthenticate
+        enabled = canAuthenticateFingerprint
     ) {
-        Text("Autenticar")
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.baseline_fingerprint_24),
+                contentDescription = "Ícone de impressão digital"
+            )
+            Text("Autenticar com Impressão Digital")
+        }
     }
 }
