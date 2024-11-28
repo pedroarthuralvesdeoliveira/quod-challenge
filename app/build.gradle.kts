@@ -51,6 +51,7 @@ dependencies {
     implementation(libs.face.detection)
     implementation(libs.image.labeling)
     implementation(libs.androidx.biometric)
+    implementation(libs.androidx.biometric.ktx)
     implementation("androidx.compose.material3:material3-window-size-class:1.3.1")
     implementation(libs.androidx.appcompat)
     implementation(libs.accompanist.systemuicontroller)

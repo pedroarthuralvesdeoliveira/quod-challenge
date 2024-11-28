@@ -14,11 +14,13 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
@@ -30,6 +32,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -112,58 +115,68 @@ fun FaceComparisonComponent() {
         }
     )
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(16.dp)
+            .wrapContentSize(Alignment.Center),
+        contentAlignment = Alignment.Center
     ) {
-        if (imageUri != null) {
-            Image(
-                painter = rememberAsyncImagePainter(
-                    model = ImageRequest.Builder(context)
-                        .data(imageUri)
-                        .size(Size.ORIGINAL)
-                        .build()
-                ),
-                contentDescription = "Captured Image",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(300.dp)
-                    .clip(RoundedCornerShape(8.dp))
-            )
-        }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .wrapContentSize(Alignment.Center),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            if (imageUri != null) {
+                Image(
+                    painter = rememberAsyncImagePainter(
+                        model = ImageRequest.Builder(context)
+                            .data(imageUri)
+                            .size(Size.ORIGINAL)
+                            .build()
+                    ),
+                    contentDescription = "Captured Image",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(300.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                )
+            }
 
-        Button(
-            onClick = {
-                if (activity != null) {
-                    when {
-                        ContextCompat.checkSelfPermission(
-                            activity,
-                            Manifest.permission.CAMERA
-                        ) == PackageManager.PERMISSION_GRANTED -> {
-                            launcher.launch(photoUri)
-                        }
-                        else -> {
-                            ActivityCompat.requestPermissions(
+            Button(
+                onClick = {
+                    if (activity != null) {
+                        when {
+                            ContextCompat.checkSelfPermission(
                                 activity,
-                                arrayOf(Manifest.permission.CAMERA),
-                                CAMERA_PERMISSION_REQUEST_CODE
-                            )
+                                Manifest.permission.CAMERA
+                            ) == PackageManager.PERMISSION_GRANTED -> {
+                                launcher.launch(photoUri)
+                            }
+                            else -> {
+                                ActivityCompat.requestPermissions(
+                                    activity,
+                                    arrayOf(Manifest.permission.CAMERA),
+                                    CAMERA_PERMISSION_REQUEST_CODE
+                                )
+                            }
                         }
                     }
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Tirar Foto")
-        }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Tirar Foto")
+            }
 
-        if (isSamePerson != null) {
-            Text(
-                text = if (isSamePerson == true) "Mesma Pessoa" else "Pessoas Diferentes",
-                color = if (isSamePerson == true) Color.Green else Color.Red
-            )
+            if (isSamePerson != null) {
+                Text(
+                    text = if (isSamePerson == true) "Mesma Pessoa" else "Pessoas Diferentes",
+                    color = if (isSamePerson == true) Color.Green else Color.Red
+                )
+            }
         }
     }
 

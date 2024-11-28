@@ -1,10 +1,9 @@
 package br.com.fiap.quod.scoreantifraude
 
-import android.R.attr.dialogMessage
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -37,62 +36,69 @@ fun AntiFraude(antiFraudScreenViewModel: AntiFraudScreenViewModel) {
     var showDialog by remember { mutableStateOf(false) }
     var dialogMessage by remember { mutableStateOf("") }
 
-    Column (
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.padding(16.dp)
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        contentAlignment = Alignment.Center
     ) {
-        CaixaDeEntrada(
-            shape = RoundedCornerShape(32.dp),
-            value = cpf,
-            maxLines = null,
-            placeholder = "013.575-549-21",
-            label = "Digite o CPF",
-            color = Color.Gray.copy(0.5f),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            keyboardType = KeyboardType.Text
+        Column (
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(16.dp)
         ) {
-            antiFraudScreenViewModel.onCpfChanged(it)
-        }
-        Button(
-            onClick = {
-                val inputValido = antiFraudScreenViewModel.validarScore()
-                if (inputValido > 500) {
-                    dialogMessage = "Perfil aceito com sucesso!"
-                    showDialog = true
-                } else {
-                    dialogMessage = "Seu score ${inputValido} é muito baixo para esta aplicação!"
-                    showDialog = true
-                }
-            },
-            modifier = Modifier
-                .width(130.dp)
-                .height(50.dp)
-                .align(Alignment.CenterHorizontally)
-                .padding(8.dp),
-            colors = ButtonColors(
-                contentColor = Color.White,
-                containerColor = Color.Gray,
-                disabledContainerColor = Color.Unspecified,
-                disabledContentColor = Color.Unspecified
-            )
-        ) {
-            Text(text = "Enviar")
-        }
-
-        if (showDialog) {
-            AlertDialog(
-                onDismissRequest = { showDialog = false },
-                title = { Text("Score") },
-                text = { Text(dialogMessage) },
-                confirmButton = {
-                    Button(onClick = { showDialog = false }) {
-                        Text("OK")
+            CaixaDeEntrada(
+                shape = RoundedCornerShape(32.dp),
+                value = cpf,
+                maxLines = null,
+                placeholder = "013.575-549-21",
+                label = "Digite o CPF",
+                color = Color.Gray.copy(0.5f),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                keyboardType = KeyboardType.Text
+            ) {
+                antiFraudScreenViewModel.onCpfChanged(it)
+            }
+            Button(
+                onClick = {
+                    val inputValido = antiFraudScreenViewModel.validarScore()
+                    if (inputValido > 500) {
+                        dialogMessage = "Perfil aceito com sucesso!"
+                        showDialog = true
+                    } else {
+                        dialogMessage = "Seu score $inputValido é muito baixo para esta aplicação!"
+                        showDialog = true
                     }
-                }
-            )
+                },
+                modifier = Modifier
+                    .width(130.dp)
+                    .height(50.dp)
+                    .align(Alignment.CenterHorizontally)
+                    .padding(8.dp),
+                colors = ButtonColors(
+                    contentColor = Color.White,
+                    containerColor = Color.Gray,
+                    disabledContainerColor = Color.Unspecified,
+                    disabledContentColor = Color.Unspecified
+                )
+            ) {
+                Text(text = "Enviar")
+            }
+
+            if (showDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDialog = false },
+                    title = { Text("Score") },
+                    text = { Text(dialogMessage) },
+                    confirmButton = {
+                        Button(onClick = { showDialog = false }) {
+                            Text("OK")
+                        }
+                    }
+                )
+            }
         }
     }
 }

@@ -1,6 +1,8 @@
 package br.com.fiap.quod.simswap
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -32,63 +34,70 @@ fun CheckSIMSwap(checkSIMSwapViewModel: CheckSIMSwapViewModel) {
     var showDialog by remember { mutableStateOf(false) }
     var dialogMessage by remember { mutableStateOf("") }
 
-    Column (
-        modifier = Modifier.padding(16.dp)
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = "Informe o telefone com o código do pais e o DDD"
-        )
-        CaixaDeEntrada(
-            shape = RoundedCornerShape(32.dp),
-            value = numero,
-            maxLines = 5,
-            placeholder = "+5545991015545",
-            label = "",
-            color = Color.Gray.copy(0.5f),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            keyboardType = KeyboardType.Text
+        Column (
+            modifier = Modifier.padding(16.dp)
         ) {
-            checkSIMSwapViewModel.onNumeroChanged(it)
-        }
-        Button(
-            onClick = {
-                val inputValido = checkSIMSwapViewModel.validarInput()
-                if (inputValido) {
-                    dialogMessage = "Input enviado com sucesso!"
-                    showDialog = true
-                } else {
-                    dialogMessage = "Erro no input. Verifique os dados."
-                    showDialog = true
-                }
-            },
-            modifier = Modifier
-                .width(130.dp)
-                .height(50.dp)
-                .align(Alignment.CenterHorizontally)
-                .padding(8.dp),
-            colors = ButtonColors(
-                contentColor = Color.White,
-                containerColor = Color.Gray,
-                disabledContainerColor = Color.Unspecified,
-                disabledContentColor = Color.Unspecified
+            Text(
+                text = "Informe o telefone com o código do pais e o DDD"
             )
-        ) {
-            Text(text = "Enviar")
-        }
-
-        if (showDialog) {
-            AlertDialog(
-                onDismissRequest = { showDialog = false },
-                title = { Text("Resultado") },
-                text = { Text(dialogMessage) },
-                confirmButton = {
-                    Button(onClick = { showDialog = false }) {
-                        Text("OK")
+            CaixaDeEntrada(
+                shape = RoundedCornerShape(32.dp),
+                value = numero,
+                maxLines = 5,
+                placeholder = "+5545991015545",
+                label = "",
+                color = Color.Gray.copy(0.5f),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                keyboardType = KeyboardType.Text
+            ) {
+                checkSIMSwapViewModel.onNumeroChanged(it)
+            }
+            Button(
+                onClick = {
+                    val inputValido = checkSIMSwapViewModel.validarInput()
+                    if (inputValido) {
+                        dialogMessage = "Input enviado com sucesso!"
+                        showDialog = true
+                    } else {
+                        dialogMessage = "Erro no input. Verifique os dados."
+                        showDialog = true
                     }
-                }
-            )
+                },
+                modifier = Modifier
+                    .width(130.dp)
+                    .height(50.dp)
+                    .align(Alignment.CenterHorizontally)
+                    .padding(8.dp),
+                colors = ButtonColors(
+                    contentColor = Color.White,
+                    containerColor = Color.Gray,
+                    disabledContainerColor = Color.Unspecified,
+                    disabledContentColor = Color.Unspecified
+                )
+            ) {
+                Text(text = "Enviar")
+            }
+
+            if (showDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDialog = false },
+                    title = { Text("Resultado") },
+                    text = { Text(dialogMessage) },
+                    confirmButton = {
+                        Button(onClick = { showDialog = false }) {
+                            Text("OK")
+                        }
+                    }
+                )
+            }
         }
     }
 }

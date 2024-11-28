@@ -87,7 +87,7 @@ fun Menu(biometricHelper: BiometricHelper) {
         composable(Screen.Home.route) { HomeScreen(navController) }
         composable(Screen.FacialBiometry.route) { BiometricFaceAuthentication(
             biometricHelper = biometricHelper,
-            onSuccess = {  },
+            onSuccess = {},
             onError = {}
         ) }
         composable(Screen.DigitalBiometry.route) { BiometricFingerprintAuthentication(
