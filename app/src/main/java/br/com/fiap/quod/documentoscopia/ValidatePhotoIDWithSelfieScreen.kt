@@ -12,17 +12,21 @@ import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -42,6 +46,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.exifinterface.media.ExifInterface
+import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Size
@@ -63,7 +68,9 @@ private const val CAMERA_PERMISSION_REQUEST_CODE = 123
 private const val SIMILARITY_THRESHOLD = 0.85f
 
 @Composable
-fun FaceComparisonComponent() {
+fun FaceComparisonComponent(
+    navController: NavController
+) {
     val coroutineScope = rememberCoroutineScope()
 
     var imageUri by remember { mutableStateOf<Uri?>(null) }
@@ -115,20 +122,38 @@ fun FaceComparisonComponent() {
         }
     )
 
-    Box(
+    Column (
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
-            .wrapContentSize(Alignment.Center),
-        contentAlignment = Alignment.Center
     ) {
+        Row (
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.Start
+        ) {
+            Button(
+                border = BorderStroke(1.dp, Color.Black),
+                shape = RoundedCornerShape(32.dp),
+                onClick = {navController.navigate("home")},
+                colors = ButtonColors(
+                    containerColor = Color.Transparent,
+                    contentColor = Color.White,
+                    disabledContentColor = Color.Gray,
+                    disabledContainerColor = Color.Cyan
+                )
+            ) {
+                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "", tint = Color.LightGray)
+            }
+        }
+
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-                .wrapContentSize(Alignment.Center),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+                .weight(1f)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
             if (imageUri != null) {
                 Image(
@@ -179,6 +204,85 @@ fun FaceComparisonComponent() {
             }
         }
     }
+
+//    Box(
+//        modifier = Modifier
+//            .fillMaxSize()
+//            .padding(16.dp)
+//            .wrapContentSize(Alignment.Center),
+//        contentAlignment = Alignment.Center
+//    ) {
+//        Column(
+//            modifier = Modifier
+//                .fillMaxSize()
+//                .padding(16.dp)
+//                .wrapContentSize(Alignment.Center),
+//            verticalArrangement = Arrangement.Center,
+//            horizontalAlignment = Alignment.CenterHorizontally
+//        ) {
+//            Button(
+//                border = BorderStroke(1.dp, Color.Black),
+//                shape = RoundedCornerShape(32.dp),
+//                onClick = {navController.navigate("home")},
+//                colors = ButtonColors(
+//                    containerColor = Color.Transparent,
+//                    contentColor = Color.White,
+//                    disabledContentColor = Color.Gray,
+//                    disabledContainerColor = Color.Cyan
+//                )
+//            ) {
+//                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "", tint = Color.LightGray)
+//            }
+//
+//            if (imageUri != null) {
+//                Image(
+//                    painter = rememberAsyncImagePainter(
+//                        model = ImageRequest.Builder(context)
+//                            .data(imageUri)
+//                            .size(Size.ORIGINAL)
+//                            .build()
+//                    ),
+//                    contentDescription = "Captured Image",
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .height(300.dp)
+//                        .clip(RoundedCornerShape(8.dp))
+//                )
+//            }
+//
+//            Button(
+//                onClick = {
+//                    if (activity != null) {
+//                        when {
+//                            ContextCompat.checkSelfPermission(
+//                                activity,
+//                                Manifest.permission.CAMERA
+//                            ) == PackageManager.PERMISSION_GRANTED -> {
+//                                launcher.launch(photoUri)
+//                            }
+//                            else -> {
+//                                ActivityCompat.requestPermissions(
+//                                    activity,
+//                                    arrayOf(Manifest.permission.CAMERA),
+//                                    CAMERA_PERMISSION_REQUEST_CODE
+//                                )
+//                            }
+//                        }
+//                    }
+//                },
+//                modifier = Modifier.fillMaxWidth()
+//            ) {
+//                Text("Tirar Foto")
+//            }
+//
+//            if (isSamePerson != null) {
+//                Text(
+//                    text = if (isSamePerson == true) "Mesma Pessoa" else "Pessoas Diferentes",
+//                    color = if (isSamePerson == true) Color.Green else Color.Red
+//                )
+//            }
+//        }
+//    }
 
     LaunchedEffect(imageUri) {
         if (imageUri != null) {

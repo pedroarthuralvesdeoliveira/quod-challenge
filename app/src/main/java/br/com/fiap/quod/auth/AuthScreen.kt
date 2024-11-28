@@ -1,6 +1,7 @@
 package br.com.fiap.quod.auth
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,9 +10,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,10 +29,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import br.com.fiap.quod.components.CaixaDeEntrada
 
 @Composable
-fun Auth(authScreenViewModel: AuthScreenViewModel) {
+fun Auth(navController: NavController, authScreenViewModel: AuthScreenViewModel) {
     var showDialog by remember { mutableStateOf(false) }
     var dialogMessage by remember { mutableStateOf("") }
 
@@ -50,13 +56,39 @@ fun Auth(authScreenViewModel: AuthScreenViewModel) {
 
     val inputValido = authScreenViewModel.validar()
 
-    Box(
+    Column (
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        contentAlignment = Alignment.Center
+            .padding(16.dp)
     ) {
-        Column {
+        Row (
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.Start
+        ) {
+            Button(
+                border = BorderStroke(1.dp, Color.Black),
+                shape = RoundedCornerShape(32.dp),
+                onClick = {navController.navigate("home")},
+                colors = ButtonColors(
+                    containerColor = Color.Transparent,
+                    contentColor = Color.White,
+                    disabledContentColor = Color.Gray,
+                    disabledContainerColor = Color.Cyan
+                )
+            ) {
+                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "", tint = Color.LightGray)
+            }
+        }
+
+        Column (
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
             Row {
                 CaixaDeEntrada(
                     shape = RoundedCornerShape(32.dp),
@@ -73,7 +105,6 @@ fun Auth(authScreenViewModel: AuthScreenViewModel) {
                     authScreenViewModel.onCpfChanged(it)
                 }
             }
-
             Row {
                 CaixaDeEntrada(
                     shape = RoundedCornerShape(32.dp),
@@ -164,10 +195,139 @@ fun Auth(authScreenViewModel: AuthScreenViewModel) {
             }
         }
     }
+//    Box(
+//        modifier = Modifier
+//            .fillMaxSize()
+//            .padding(16.dp),
+//        contentAlignment = Alignment.Center
+//    ) {
+//        Column {
+//            Row {
+//                Button(
+//                    border = BorderStroke(1.dp, Color.Black),
+//                    shape = RoundedCornerShape(32.dp),
+//                    onClick = {navController.navigate("home")},
+//                    colors = ButtonColors(
+//                        containerColor = Color.Transparent,
+//                        contentColor = Color.White,
+//                        disabledContentColor = Color.Gray,
+//                        disabledContainerColor = Color.Cyan
+//                    )
+//                ) {
+//                    Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "", tint = Color.LightGray)
+//                }
+//
+//                CaixaDeEntrada(
+//                    shape = RoundedCornerShape(32.dp),
+//                    value = cpf,
+//                    maxLines = 5,
+//                    placeholder = "013.666.444-75",
+//                    label = "Digite o CPF",
+//                    color = Color.Gray.copy(0.5f),
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(bottom = 16.dp),
+//                    keyboardType = KeyboardType.Text
+//                ) {
+//                    authScreenViewModel.onCpfChanged(it)
+//                }
+//            }
+//
+//            Row {
+//                CaixaDeEntrada(
+//                    shape = RoundedCornerShape(32.dp),
+//                    value = nome,
+//                    maxLines = 5,
+//                    placeholder = "Neymar Junior",
+//                    label = "Digite o nome",
+//                    color = Color.Gray.copy(0.5f),
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(bottom = 16.dp),
+//                    keyboardType = KeyboardType.Text
+//                ) {
+//                    authScreenViewModel.onNomeChanged(it)
+//                }
+//            }
+//
+//            Row {
+//                CaixaDeEntrada(
+//                    shape = RoundedCornerShape(32.dp),
+//                    value = endereco,
+//                    maxLines = 5,
+//                    placeholder = "Rua Engenheiro Rebouças nº 475",
+//                    label = "Digite o endereço",
+//                    color = Color.Gray.copy(0.5f),
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(bottom = 16.dp),
+//                    keyboardType = KeyboardType.Text
+//                ) {
+//                    authScreenViewModel.onEnderecoChanged(it)
+//                }
+//            }
+//
+//            Row {
+//                CaixaDeEntrada(
+//                    shape = RoundedCornerShape(32.dp),
+//                    value = celular,
+//                    maxLines = 5,
+//                    placeholder = "45991057977",
+//                    label = "Digite o telefone",
+//                    color = Color.Gray.copy(0.5f),
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(bottom = 16.dp),
+//                    keyboardType = KeyboardType.Text
+//                ) {
+//                    authScreenViewModel.onCelularChanged(it)
+//                }
+//            }
+//
+//            Button(
+//                onClick = {
+//                    if (inputValido) {
+//                        dialogMessage = "Perfil aceito com sucesso!"
+//                        showDialog = true
+//                    } else {
+//                        dialogMessage = "Dados não conferem!"
+//                        showDialog = true
+//                    }
+//                },
+//                modifier = Modifier
+//                    .width(130.dp)
+//                    .height(50.dp)
+//                    .align(Alignment.CenterHorizontally)
+//                    .padding(8.dp),
+//                colors = ButtonColors(
+//                    contentColor = Color.White,
+//                    containerColor = Color.Gray,
+//                    disabledContainerColor = Color.Unspecified,
+//                    disabledContentColor = Color.Unspecified
+//                )
+//            ) {
+//                Text(text = "Enviar")
+//            }
+//
+//            if (showDialog) {
+//                AlertDialog(
+//                    onDismissRequest = { showDialog = false },
+//                    title = { Text("Permissão ao app") },
+//                    text = { Text(dialogMessage) },
+//                    confirmButton = {
+//                        Button(onClick = { showDialog = false }) {
+//                            Text("OK")
+//                        }
+//                    }
+//                )
+//            }
+//        }
+//    }
 }
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun AuthPreview() {
-    Auth(authScreenViewModel = AuthScreenViewModel())
+    val navController = rememberNavController()
+    Auth(navController = navController, authScreenViewModel = AuthScreenViewModel())
 }

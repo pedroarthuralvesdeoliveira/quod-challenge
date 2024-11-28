@@ -1,16 +1,21 @@
 package br.com.fiap.quod.simswap
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
@@ -24,24 +29,53 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import br.com.fiap.quod.components.CaixaDeEntrada
 
 @Composable
-fun CheckSIMSwap(checkSIMSwapViewModel: CheckSIMSwapViewModel) {
+fun CheckSIMSwap(
+    navController: NavController,
+    checkSIMSwapViewModel: CheckSIMSwapViewModel
+) {
     val numero by checkSIMSwapViewModel
         .numeroState.observeAsState(initial = "")
 
     var showDialog by remember { mutableStateOf(false) }
     var dialogMessage by remember { mutableStateOf("") }
 
-    Box(
+    Column (
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        contentAlignment = Alignment.Center
+            .padding(16.dp)
     ) {
+        Row (
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.Start
+        ) {
+            Button(
+                border = BorderStroke(1.dp, Color.Black),
+                shape = RoundedCornerShape(32.dp),
+                onClick = {navController.navigate("home")},
+                colors = ButtonColors(
+                    containerColor = Color.Transparent,
+                    contentColor = Color.White,
+                    disabledContentColor = Color.Gray,
+                    disabledContainerColor = Color.Cyan
+                )
+            ) {
+                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "", tint = Color.LightGray)
+            }
+        }
+
         Column (
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
             Text(
                 text = "Informe o telefone com o código do pais e o DDD"
@@ -64,10 +98,10 @@ fun CheckSIMSwap(checkSIMSwapViewModel: CheckSIMSwapViewModel) {
                 onClick = {
                     val inputValido = checkSIMSwapViewModel.validarInput()
                     if (inputValido) {
-                        dialogMessage = "Input enviado com sucesso!"
+                        dialogMessage = "Tudo o.k. com o CHIP!"
                         showDialog = true
                     } else {
-                        dialogMessage = "Erro no input. Verifique os dados."
+                        dialogMessage = "O chip foi trocado recentemente."
                         showDialog = true
                     }
                 },
@@ -100,10 +134,97 @@ fun CheckSIMSwap(checkSIMSwapViewModel: CheckSIMSwapViewModel) {
             }
         }
     }
+
+//    Box(
+//        modifier = Modifier
+//            .fillMaxSize()
+//            .padding(16.dp)
+//            .padding(top = 40.dp),
+//        contentAlignment = Alignment.Center
+//    ) {
+//        Column (
+//            modifier = Modifier.padding(16.dp)
+//        ) {
+//            Row(
+//                horizontalArrangement = Arrangement.spacedBy(0.dp, Alignment.CenterHorizontally),
+//                verticalAlignment = Alignment.CenterVertically,
+//            ) {
+//                Button(
+//                    border = BorderStroke(1.dp, Color.Black),
+//                    shape = RoundedCornerShape(32.dp),
+//                    onClick = {navController.navigate("home")},
+//                    colors = ButtonColors(
+//                        containerColor = Color.Transparent,
+//                        contentColor = Color.White,
+//                        disabledContentColor = Color.Gray,
+//                        disabledContainerColor = Color.Cyan
+//                    )
+//                ) {
+//                    Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "", tint = Color.LightGray)
+//                }
+//            }
+//            Text(
+//                text = "Informe o telefone com o código do pais e o DDD"
+//            )
+//            CaixaDeEntrada(
+//                shape = RoundedCornerShape(32.dp),
+//                value = numero,
+//                maxLines = 5,
+//                placeholder = "+5545991015545",
+//                label = "",
+//                color = Color.Gray.copy(0.5f),
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(bottom = 16.dp),
+//                keyboardType = KeyboardType.Text
+//            ) {
+//                checkSIMSwapViewModel.onNumeroChanged(it)
+//            }
+//            Button(
+//                onClick = {
+//                    val inputValido = checkSIMSwapViewModel.validarInput()
+//                    if (inputValido) {
+//                        dialogMessage = "Tudo o.k. com o CHIP!"
+//                        showDialog = true
+//                    } else {
+//                        dialogMessage = "O chip foi trocado recentemente."
+//                        showDialog = true
+//                    }
+//                },
+//                modifier = Modifier
+//                    .width(130.dp)
+//                    .height(50.dp)
+//                    .align(Alignment.CenterHorizontally)
+//                    .padding(8.dp),
+//                colors = ButtonColors(
+//                    contentColor = Color.White,
+//                    containerColor = Color.Gray,
+//                    disabledContainerColor = Color.Unspecified,
+//                    disabledContentColor = Color.Unspecified
+//                )
+//            ) {
+//                Text(text = "Enviar")
+//            }
+//
+//            if (showDialog) {
+//                AlertDialog(
+//                    onDismissRequest = { showDialog = false },
+//                    title = { Text("Resultado") },
+//                    text = { Text(dialogMessage) },
+//                    confirmButton = {
+//                        Button(onClick = { showDialog = false }) {
+//                            Text("OK")
+//                        }
+//                    }
+//                )
+//            }
+//        }
+//    }
 }
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun CheckSIMSwapPreview() {
-    CheckSIMSwap(checkSIMSwapViewModel = CheckSIMSwapViewModel())
+    val navController = rememberNavController()
+    CheckSIMSwap(navController = navController, checkSIMSwapViewModel = CheckSIMSwapViewModel())
 }

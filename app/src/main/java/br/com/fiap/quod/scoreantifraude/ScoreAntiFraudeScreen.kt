@@ -1,17 +1,21 @@
 package br.com.fiap.quod.scoreantifraude
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,27 +29,51 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import br.com.fiap.quod.components.CaixaDeEntrada
 import br.com.fiap.quod.ui.theme.QuodTheme
 
 @Composable
-fun AntiFraude(antiFraudScreenViewModel: AntiFraudScreenViewModel) {
+fun AntiFraude(navController: NavController, antiFraudScreenViewModel: AntiFraudScreenViewModel) {
     val cpf by antiFraudScreenViewModel
         .cpfState.observeAsState(initial = "")
 
     var showDialog by remember { mutableStateOf(false) }
     var dialogMessage by remember { mutableStateOf("") }
 
-    Box(
+    Column (
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        contentAlignment = Alignment.Center
+            .padding(16.dp)
     ) {
+        Row (
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.Start
+        ) {
+            Button(
+                border = BorderStroke(1.dp, Color.Black),
+                shape = RoundedCornerShape(32.dp),
+                onClick = {navController.navigate("home")},
+                colors = ButtonColors(
+                    containerColor = Color.Transparent,
+                    contentColor = Color.White,
+                    disabledContentColor = Color.Gray,
+                    disabledContainerColor = Color.Cyan
+                )
+            ) {
+                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "", tint = Color.LightGray)
+            }
+        }
+
         Column (
-            verticalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(16.dp)
+            verticalArrangement = Arrangement.Center
         ) {
             CaixaDeEntrada(
                 shape = RoundedCornerShape(32.dp),
@@ -107,6 +135,7 @@ fun AntiFraude(antiFraudScreenViewModel: AntiFraudScreenViewModel) {
 @Composable
 fun AntiFraudePreview() {
     QuodTheme {
-        AntiFraude(antiFraudScreenViewModel = AntiFraudScreenViewModel())
+        val navController = rememberNavController()
+        AntiFraude(navController = navController, antiFraudScreenViewModel = AntiFraudScreenViewModel())
     }
 }

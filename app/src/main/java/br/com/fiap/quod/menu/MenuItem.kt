@@ -86,23 +86,30 @@ fun Menu(biometricHelper: BiometricHelper) {
     NavHost(navController = navController, startDestination = Screen.Home.route) {
         composable(Screen.Home.route) { HomeScreen(navController) }
         composable(Screen.FacialBiometry.route) { BiometricFaceAuthentication(
+            navController = navController,
             biometricHelper = biometricHelper,
             onSuccess = {},
             onError = {}
         ) }
         composable(Screen.DigitalBiometry.route) { BiometricFingerprintAuthentication(
+            navController = navController,
             biometricHelper = biometricHelper,
             onSuccess = {},
             onError = {}
         ) }
-        composable(Screen.DocumentAnalysis.route) { FaceComparisonComponent() }
+        composable(Screen.DocumentAnalysis.route) { FaceComparisonComponent(
+            navController = navController
+        ) }
         composable(Screen.SIMSwap.route) { CheckSIMSwap(
+            navController = navController,
             checkSIMSwapViewModel = CheckSIMSwapViewModel()
         ) }
         composable(Screen.CadastralAuthentication.route) { Auth(
+            navController = navController,
             authScreenViewModel = AuthScreenViewModel()
         ) }
         composable(Screen.AntifraudScore.route) { AntiFraude(
+            navController = navController,
             antiFraudScreenViewModel = AntiFraudScreenViewModel()
         ) }
     }
