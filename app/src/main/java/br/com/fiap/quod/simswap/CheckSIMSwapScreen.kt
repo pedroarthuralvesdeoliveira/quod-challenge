@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Icon
@@ -32,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import br.com.fiap.quod.components.CaixaDeEntrada
+import br.com.fiap.quod.components.CustomAlertDialog
 
 @Composable
 fun CheckSIMSwap(
@@ -41,8 +41,9 @@ fun CheckSIMSwap(
     val numero by checkSIMSwapViewModel
         .numeroState.observeAsState(initial = "")
 
-    var showDialog by remember { mutableStateOf(false) }
-    var dialogMessage by remember { mutableStateOf("") }
+    var showCustomDialog by remember { mutableStateOf(false) }
+    var isCustomDialogSuccess by remember { mutableStateOf(false) }
+    var customDialogMessage by remember { mutableStateOf("") }
 
     Column (
         modifier = Modifier
@@ -98,12 +99,13 @@ fun CheckSIMSwap(
                 onClick = {
                     val inputValido = checkSIMSwapViewModel.validarInput()
                     if (inputValido) {
-                        dialogMessage = "Tudo o.k. com o CHIP!"
-                        showDialog = true
+                        customDialogMessage = "Tudo o.k. com o CHIP!"
+                        isCustomDialogSuccess = true
                     } else {
-                        dialogMessage = "O chip foi trocado recentemente."
-                        showDialog = true
+                        customDialogMessage = "O chip foi trocado recentemente. "
+                        isCustomDialogSuccess = false
                     }
+                    showCustomDialog = true
                 },
                 modifier = Modifier
                     .width(130.dp)
@@ -120,16 +122,13 @@ fun CheckSIMSwap(
                 Text(text = "Enviar")
             }
 
-            if (showDialog) {
-                AlertDialog(
-                    onDismissRequest = { showDialog = false },
-                    title = { Text("Resultado") },
-                    text = { Text(dialogMessage) },
-                    confirmButton = {
-                        Button(onClick = { showDialog = false }) {
-                            Text("OK")
-                        }
-                    }
+            if (showCustomDialog) {
+                CustomAlertDialog(
+                    showDialog = showCustomDialog,
+                    isSuccess = isCustomDialogSuccess,
+                    message = customDialogMessage,
+                    onDismiss = { showCustomDialog = false },
+                    navController = navController
                 )
             }
         }

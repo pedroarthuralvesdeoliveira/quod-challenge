@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.navigation.NavController
 import kotlinx.coroutines.delay
 
 @Composable
@@ -24,7 +25,7 @@ fun CustomAlertDialog(
     isSuccess: Boolean,
     message: String,
     onDismiss: () -> Unit,
-    //navController: NavController
+    navController: NavController
 ) {
     rememberCoroutineScope()
 
@@ -41,7 +42,7 @@ fun CustomAlertDialog(
                     Text(
                         text = if (isSuccess) "Sucesso" else "Erro",
                         style = MaterialTheme.typography.headlineLarge,
-                        color = if (isSuccess) Color(0xff7ca37c) else Color.Red
+                        color = if (isSuccess) Color(0xff7ca37c) else Color(0XFFdc1414)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
@@ -52,14 +53,14 @@ fun CustomAlertDialog(
                     LaunchedEffect(key1 = showDialog) {
                         if (showDialog) {
                             delay(3000)
-                            //navController.navigate("home") // Redirecionar para a tela inicial
-                            onDismiss() // Fechar o diálogo
+                            navController.navigate("home")
+                            onDismiss()
                         }
                     }
 
                     Button(
                         onClick = {
-                            //navController.navigate("home")
+                            navController.navigate("home")
                             onDismiss()
                         }
                     ) {

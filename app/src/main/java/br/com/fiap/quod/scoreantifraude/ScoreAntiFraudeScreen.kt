@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Icon
@@ -32,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import br.com.fiap.quod.components.CaixaDeEntrada
+import br.com.fiap.quod.components.CustomAlertDialog
 import br.com.fiap.quod.ui.theme.QuodTheme
 
 @Composable
@@ -39,8 +39,9 @@ fun AntiFraude(navController: NavController, antiFraudScreenViewModel: AntiFraud
     val cpf by antiFraudScreenViewModel
         .cpfState.observeAsState(initial = "")
 
-    var showDialog by remember { mutableStateOf(false) }
-    var dialogMessage by remember { mutableStateOf("") }
+    var showCustomDialog by remember { mutableStateOf(false) }
+    var isCustomDialogSuccess by remember { mutableStateOf(false) }
+    var customDialogMessage by remember { mutableStateOf("") }
 
     Column (
         modifier = Modifier
@@ -92,12 +93,13 @@ fun AntiFraude(navController: NavController, antiFraudScreenViewModel: AntiFraud
             Button(
                 onClick = {
                     val inputValido = antiFraudScreenViewModel.validarScore()
+                    showCustomDialog = true
                     if (inputValido > 500) {
-                        dialogMessage = "Perfil aceito com sucesso!"
-                        showDialog = true
+                        customDialogMessage = "Perfil aceito com sucesso!"
+                        isCustomDialogSuccess = true
                     } else {
-                        dialogMessage = "Seu score $inputValido é muito baixo para esta aplicação!"
-                        showDialog = true
+                        customDialogMessage = "Seu score $inputValido é muito baixo para esta aplicação!"
+                        isCustomDialogSuccess = true
                     }
                 },
                 modifier = Modifier
@@ -115,16 +117,13 @@ fun AntiFraude(navController: NavController, antiFraudScreenViewModel: AntiFraud
                 Text(text = "Enviar")
             }
 
-            if (showDialog) {
-                AlertDialog(
-                    onDismissRequest = { showDialog = false },
-                    title = { Text("Score") },
-                    text = { Text(dialogMessage) },
-                    confirmButton = {
-                        Button(onClick = { showDialog = false }) {
-                            Text("OK")
-                        }
-                    }
+            if (showCustomDialog) {
+                CustomAlertDialog(
+                    showDialog = showCustomDialog,
+                    isSuccess = isCustomDialogSuccess,
+                    message = customDialogMessage,
+                    onDismiss = { showCustomDialog = false },
+                    navController = navController
                 )
             }
         }

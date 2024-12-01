@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Icon
@@ -32,11 +31,13 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import br.com.fiap.quod.components.CaixaDeEntrada
+import br.com.fiap.quod.components.CustomAlertDialog
 
 @Composable
 fun Auth(navController: NavController, authScreenViewModel: AuthScreenViewModel) {
-    var showDialog by remember { mutableStateOf(false) }
-    var dialogMessage by remember { mutableStateOf("") }
+    var showCustomDialog by remember { mutableStateOf(false) }
+    var isCustomDialogSuccess by remember { mutableStateOf(false) }
+    var customDialogMessage by remember { mutableStateOf("") }
 
     val cpf by authScreenViewModel
         .cpfState
@@ -159,12 +160,13 @@ fun Auth(navController: NavController, authScreenViewModel: AuthScreenViewModel)
             Button(
                 onClick = {
                     if (inputValido) {
-                        dialogMessage = "Perfil aceito com sucesso!"
-                        showDialog = true
+                        customDialogMessage = "Perfil aceito com sucesso!"
+                        isCustomDialogSuccess = true
                     } else {
-                        dialogMessage = "Dados não conferem!"
-                        showDialog = true
+                        customDialogMessage = "Dados não conferem!"
+                        isCustomDialogSuccess = true
                     }
+                    showCustomDialog = true
                 },
                 modifier = Modifier
                     .width(130.dp)
@@ -181,16 +183,13 @@ fun Auth(navController: NavController, authScreenViewModel: AuthScreenViewModel)
                 Text(text = "Enviar")
             }
 
-            if (showDialog) {
-                AlertDialog(
-                    onDismissRequest = { showDialog = false },
-                    title = { Text("Permissão ao app") },
-                    text = { Text(dialogMessage) },
-                    confirmButton = {
-                        Button(onClick = { showDialog = false }) {
-                            Text("OK")
-                        }
-                    }
+            if (showCustomDialog) {
+                CustomAlertDialog(
+                    showDialog = showCustomDialog,
+                    isSuccess = isCustomDialogSuccess,
+                    message = customDialogMessage,
+                    onDismiss = { showCustomDialog = false },
+                    navController = navController
                 )
             }
         }
