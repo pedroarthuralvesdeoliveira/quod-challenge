@@ -38,6 +38,7 @@ android {
         compose = true
         viewBinding = true
     }
+    buildToolsVersion = "36.0.0"
 }
 
 dependencies {
@@ -51,7 +52,6 @@ dependencies {
     implementation(libs.face.detection)
     implementation(libs.image.labeling)
     implementation(libs.androidx.biometric)
-    implementation(libs.androidx.biometric.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.accompanist.systemuicontroller)
     implementation(libs.coil.compose)
@@ -66,9 +66,9 @@ dependencies {
     implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.runtime.livedata)
-    implementation ("com.squareup.retrofit2:retrofit:2.11.0")
-    implementation ("com.squareup.retrofit2:converter-gson:2.11.0")
-    implementation ("com.google.code.gson:gson:2.12.1")
+    implementation (libs.retrofit)
+    implementation (libs.converter.gson)
+    implementation (libs.gson)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

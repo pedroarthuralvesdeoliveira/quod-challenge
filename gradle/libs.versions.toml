@@ -1,31 +1,33 @@
 [versions]
-accompanistSystemuicontroller = "0.32.0"
+accompanistSystemuicontroller = "0.36.0"
 agp = "8.9.1"
 appcompat = "1.7.0"
-biometric = "1.4.0-alpha02"
-cameraCore = "1.4.0"
-coilCompose = "2.4.0"
+biometric = "1.1.0"
+cameraCore = "1.4.2"
+coilCompose = "2.7.0"
 common = "18.11.0"
-exifinterface = "1.3.7"
+converterGson = "2.11.0"
+exifinterface = "1.4.0"
 faceDetection = "16.1.7"
+gson = "2.12.1"
 imageLabeling = "17.0.9"
 kotlin = "2.0.20"
-coreKtx = "1.15.0"
+coreKtx = "1.16.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 lifecycleLivedataKtx = "2.8.7"
 lifecycleRuntimeKtx = "2.8.7"
-activityCompose = "1.9.3"
-composeBom = "2024.11.00"
-androidx-compose-runtime-livedata = "1.7.5"
-navigationCompose = "2.8.4"
+activityCompose = "1.10.1"
+composeBom = "2025.04.00"
+androidx-compose-runtime-livedata = "1.7.8"
+navigationCompose = "2.8.9"
+retrofit = "2.11.0"
 
 [libraries]
 accompanist-systemuicontroller = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanistSystemuicontroller" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 androidx-biometric = { module = "androidx.biometric:biometric", version.ref = "biometric" }
-androidx-biometric-ktx = { module = "androidx.biometric:biometric-ktx", version.ref = "biometric" }
 androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cameraCore" }
 androidx-camera-core = { module = "androidx.camera:camera-core", version.ref = "cameraCore" }
 androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "cameraCore" }
@@ -38,7 +40,9 @@ androidx-navigation-compose = { module = "androidx.navigation:navigation-compose
 androidx-runtime-livedata = { module = "androidx.compose.runtime:runtime-livedata", version.ref = "androidx-compose-runtime-livedata" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 common = { module = "com.google.mlkit:common", version.ref = "common" }
+converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 face-detection = { module = "com.google.mlkit:face-detection", version.ref = "faceDetection" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 image-labeling = { module = "com.google.mlkit:image-labeling", version.ref = "imageLabeling" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
@@ -53,6 +57,7 @@ androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
+retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
